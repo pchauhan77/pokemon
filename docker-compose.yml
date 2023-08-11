@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: PokemonGo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1109660
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pokemon-network
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nest_app
+    depends_on:
+      - postgres
+    ports:
+      - "8080:3000"
+    environment:
+      TYPEORM_CONNECTION: postgres
+      TYPEORM_HOST: postgres
+      TYPEORM_PORT: 5432
+      TYPEORM_USERNAME: postgres
+      TYPEORM_PASSWORD: 1109660
+      TYPEORM_DATABASE: PokemonGO
+      TYPEORM_ENTITIES: dist/**/*.entity.js
+      TYPEORM_MIGRATIONS: dist/migrations/*.js
+      TYPEORM_MIGRATIONS_DIR: dist/migrations
+    networks:
+      - pokemon-network
+    # volumes:
+    #   - .:/app
+    command: >
+              bash -c "npm run seed:db
+              && npm run start"
+volumes:
+  postgres_data:
+
+networks:
+  pokemon-network:
+    external: false
+    name: pokemon-network
